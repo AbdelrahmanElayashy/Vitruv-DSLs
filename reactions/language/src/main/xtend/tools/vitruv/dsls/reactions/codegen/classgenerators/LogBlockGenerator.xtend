@@ -91,15 +91,22 @@ class LogBlockGenerator extends StepExecutionClassGenerator {
 
             «IF logBlock.details.size > 0»
                 logMessage.append(" Details: {");
-                «FOR logDetail : logBlock.details»
-                    logMessage.append("«logDetail.key»=").append(String.valueOf(«logDetail.value.toGetterCall»)).append(", ");
-                «ENDFOR»
+               «FOR logDetail : logBlock.details»
+                   logMessage.append("«logDetail.key»=").append(String.valueOf(
+                       «IF logDetail.value == "traceCount"»
+                           getTraceCount()
+                       «ELSEIF logDetail.value == "traceEntries"»
+                           getTraceEntries()
+                       «ELSE»
+                           «logDetail.value.toGetterCall»
+                       «ENDIF»
+                   )).append(", ");
+               «ENDFOR»
                 logMessage.setLength(logMessage.length() - 2);
                 logMessage.append("}");
             «ENDIF»
 
             log(logMessage.toString(), java.util.logging.Level.parse("«logBlock.level.getName().toUpperCase()»"));
-
     '''
 
     def String toGetterCall(String qualifiedName) {

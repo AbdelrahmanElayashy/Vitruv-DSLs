@@ -1,6 +1,7 @@
 package tools.vitruv.dsls.reactions.runtime.structure
 
 import java.util.logging.Logger
+
 import java.util.logging.FileHandler
 import java.util.logging.Level
 import java.util.logging.Formatter
@@ -9,6 +10,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.io.IOException
 import tools.vitruv.dsls.reactions.runtime.state.ReactionExecutionState
+import tools.vitruv.change.correspondence.infrastructure.tracing.CorrespondenceTraceRecorder
+import java.util.Map
+import tools.vitruv.change.correspondence.infrastructure.tracing.CorrespondenceTraceRecorder.TraceLogEntry
+import java.util.List
+import java.util.Collections
+import tools.vitruv.dsls.reactions.runtime.state.RoutineContext
 
 abstract class AbstractLogStep {
 
@@ -51,4 +58,25 @@ abstract class AbstractLogStep {
     protected def log(String message, Level level) {
         fileLogger.log(level, message)
     }
+    
+	protected def int getTraceCount() {
+	    val routineName = RoutineContext.get();
+	    if (routineName === null) {
+	        return -1;
+	    }
+	    return CorrespondenceTraceRecorder.getInstance().getTraceCount(routineName);
+	}
+	
+	protected def List<TraceLogEntry> getTraceEntries() {
+	    val routineName = RoutineContext.get();
+	    if (routineName === null) {
+	        return Collections.emptyList();
+	    }
+	    return CorrespondenceTraceRecorder.getInstance().getTraceEntries(routineName);
+	}
+	
+	protected def Map<String, Integer> getAllTraceCounts() {
+	    return CorrespondenceTraceRecorder.getInstance().getAllTraceCounts();
+	}
+
 }
