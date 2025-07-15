@@ -97,6 +97,8 @@ class LogBlockGenerator extends StepExecutionClassGenerator {
                            getTraceCount()
                        «ELSEIF logDetail.value == "traceEntries"»
                            getTraceEntries()
+                       «ELSEIF logDetail.value == "executionTime"»
+                           getExecutionTimeFormattedMs()
                        «ELSE»
                            «logDetail.value.toGetterCall»
                        «ENDIF»

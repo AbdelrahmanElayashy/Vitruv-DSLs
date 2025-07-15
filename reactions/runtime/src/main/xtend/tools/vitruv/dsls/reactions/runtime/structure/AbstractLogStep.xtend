@@ -16,6 +16,7 @@ import tools.vitruv.change.correspondence.infrastructure.tracing.CorrespondenceT
 import java.util.List
 import java.util.Collections
 import tools.vitruv.dsls.reactions.runtime.state.RoutineContext
+import tools.vitruv.dsls.reactions.runtime.state.RoutineExecutionProfiler
 
 abstract class AbstractLogStep {
 
@@ -41,8 +42,7 @@ abstract class AbstractLogStep {
                 fh.formatter = new Formatter() {
                     override format(LogRecord record) {
                         val timestamp = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a").format(new Date(record.getMillis))
-                        var className = record.getSourceClassName
-                        return String.format("%s  %s %s: %s%n", timestamp, className, record.getLevel, record.getMessage)
+                        return String.format("%s %s: %s%n", timestamp, record.getLevel, record.getMessage)
                     }
                 }
                 logger.addHandler(fh)
@@ -79,4 +79,13 @@ abstract class AbstractLogStep {
 	    return CorrespondenceTraceRecorder.getInstance().getAllTraceCounts();
 	}
 
+	protected def String getExecutionTimeFormattedMs() {
+	    val routineName = RoutineContext.get();
+	    if (routineName === null) {
+	        return "n/a";
+	    }
+	    val durationInNano = RoutineExecutionProfiler.getInstance().getExecutionTime(routineName);
+	    val durationInMs = durationInNano / 1_000_000.0;
+	    return String.format("%.2f ms", durationInMs);
+	}
 }

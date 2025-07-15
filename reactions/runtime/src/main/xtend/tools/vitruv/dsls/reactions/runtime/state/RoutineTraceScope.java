@@ -1,5 +1,7 @@
 package tools.vitruv.dsls.reactions.runtime.state;
 
+import tools.vitruv.change.correspondence.infrastructure.tracing.CorrespondenceTraceRecorder;
+
 /**
  *
  * This class is used in a try-with-resources block inside the generated routine execution
@@ -14,12 +16,21 @@ package tools.vitruv.dsls.reactions.runtime.state;
  */
 public class RoutineTraceScope implements AutoCloseable {
 
+    private final String routineName;
+    private final long startTimeNano;
+
     public RoutineTraceScope(String routineName) {
         RoutineContext.open(routineName);
+        this.routineName = routineName;
+        CorrespondenceTraceRecorder.getInstance().clearRoutineData(routineName);
+        CorrespondenceTraceRecorder.getInstance().setRoutineName(routineName);
+        this.startTimeNano = System.nanoTime();
     }
 
     @Override
     public void close() {
+        long durationInNano = System.nanoTime() - this.startTimeNano;
+        RoutineExecutionProfiler.getInstance().recordExecutionTime(routineName, durationInNano);
         RoutineContext.close();
     }
 }
