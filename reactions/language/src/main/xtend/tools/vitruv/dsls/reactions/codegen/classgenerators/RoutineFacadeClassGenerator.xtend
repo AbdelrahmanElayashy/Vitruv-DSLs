@@ -112,7 +112,10 @@ class RoutineFacadeClassGenerator extends ClassGenerator {
 				«CallHierarchyHaving» _caller = this._getCurrentCaller();
 				«typeRef(routineNameGenerator.qualifiedName)» routine = new «typeRef(routineNameGenerator.qualifiedName)»(_routinesFacade, _executionState, _caller«
 					»«FOR parameter : parameters BEFORE ', ' SEPARATOR ', '»«parameter.name»«ENDFOR»);
-				return routine.execute();
+				 try (tools.vitruv.dsls.reactions.runtime.state.RoutineTraceScope ignored = 
+				        new tools.vitruv.dsls.reactions.runtime.state.RoutineTraceScope("«routine.routineClassNameGenerator.simpleName»")) {
+				    return routine.execute();
+				  }
 			'''
 		])
 	}

@@ -1,6 +1,7 @@
 package tools.vitruv.dsls.reactions.runtime.structure
 
 import java.util.logging.Logger
+
 import java.util.logging.FileHandler
 import java.util.logging.Level
 import java.util.logging.Formatter
@@ -9,6 +10,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.io.IOException
 import tools.vitruv.dsls.reactions.runtime.state.ReactionExecutionState
+import tools.vitruv.change.correspondence.infrastructure.tracing.CorrespondenceTraceRecorder
+import java.util.Map
+import tools.vitruv.change.correspondence.infrastructure.tracing.CorrespondenceTraceRecorder.TraceLogEntry
+import java.util.List
+import java.util.Collections
+import tools.vitruv.dsls.reactions.runtime.state.RoutineContext
+import tools.vitruv.dsls.reactions.runtime.state.RoutineExecutionProfiler
 
 abstract class AbstractLogStep {
 
@@ -34,8 +42,7 @@ abstract class AbstractLogStep {
                 fh.formatter = new Formatter() {
                     override format(LogRecord record) {
                         val timestamp = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a").format(new Date(record.getMillis))
-                        var className = record.getSourceClassName
-                        return String.format("%s  %s %s: %s%n", timestamp, className, record.getLevel, record.getMessage)
+                        return String.format("%s %s: %s%n", timestamp, record.getLevel, record.getMessage)
                     }
                 }
                 logger.addHandler(fh)
@@ -51,4 +58,34 @@ abstract class AbstractLogStep {
     protected def log(String message, Level level) {
         fileLogger.log(level, message)
     }
+    
+	protected def int getTraceCount() {
+	    val routineName = RoutineContext.get();
+	    if (routineName === null) {
+	        return -1;
+	    }
+	    return CorrespondenceTraceRecorder.getInstance().getTraceCount(routineName);
+	}
+	
+	protected def List<TraceLogEntry> getTraceEntries() {
+	    val routineName = RoutineContext.get();
+	    if (routineName === null) {
+	        return Collections.emptyList();
+	    }
+	    return CorrespondenceTraceRecorder.getInstance().getTraceEntries(routineName);
+	}
+	
+	protected def Map<String, Integer> getAllTraceCounts() {
+	    return CorrespondenceTraceRecorder.getInstance().getAllTraceCounts();
+	}
+
+	protected def String getExecutionTimeFormattedMs() {
+	    val routineName = RoutineContext.get();
+	    if (routineName === null) {
+	        return "n/a";
+	    }
+	    val durationInNano = RoutineExecutionProfiler.getInstance().getExecutionTime(routineName);
+	    val durationInMs = durationInNano / 1_000_000.0;
+	    return String.format("%.2f ms", durationInMs);
+	}
 }
